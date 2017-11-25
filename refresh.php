@@ -1,61 +1,52 @@
 <?php
-
-function gen_uuid() {
- $uuid = array(
-  'time_low'  => 0,
-  'time_mid'  => 0,
-  'time_hi'  => 0,
-  'clock_seq_hi' => 0,
-  'clock_seq_low' => 0,
-  'node'   => array()
- );
-
- $uuid['time_low'] = mt_rand(0, 0xffff) + (mt_rand(0, 0xffff) << 16);
- $uuid['time_mid'] = mt_rand(0, 0xffff);
- $uuid['time_hi'] = (4 << 12) | (mt_rand(0, 0x1000));
- $uuid['clock_seq_hi'] = (1 << 7) | (mt_rand(0, 128));
- $uuid['clock_seq_low'] = mt_rand(0, 255);
-
- for ($i = 0; $i < 6; $i++) {
-  $uuid['node'][$i] = mt_rand(0, 255);
- }
-
- $uuid = sprintf('%08x-%04x-%04x-%02x%02x-%02x%02x%02x%02x%02x%02x',
-  $uuid['time_low'],
-  $uuid['time_mid'],
-  $uuid['time_hi'],
-  $uuid['clock_seq_hi'],
-  $uuid['clock_seq_low'],
-  $uuid['node'][0],
-  $uuid['node'][1],
-  $uuid['node'][2],
-  $uuid['node'][3],
-  $uuid['node'][4],
-  $uuid['node'][5]
- );
-
- return $uuid;
+include_once("functions.php");
+$injson = file_get_contents('php://input');
+file_put_contents("authin", $injson);
+if($injson == "") $injson = <<<EOF
+{
+    "accessToken": "7c29059d-8238-42aa-de6b-92750c2e5a37",
+    "clientToken": "00000000-0000-0000-0000-000000000000",
+    "selectedProfile": {
+        "id": "profile identifier",
+        "name": "player name"
+    },
+    "requestUser": true
 }
-    $injson = file_get_contents('php://input');
-    file_put_contents("refreshin", $injson);
-    $inputarr = json_decode($injson, true);
-    $responsearr = array(
-        "accessToken"=> gen_uuid(),
-        "clientToken"=> $inputarr["clientToken"],
-    );
-    $responsearr["selectedProfile"] =  array(
-            "id" => "839b7906-d00f-448b-fa00-e5886a2b4028",
-            "name" => "matega"
-    );
-    if(@$inputarr["requestUser"]) $responsearr["user"] = array(
-        "id" => "839b7906-d00f-448b-fa00-e5886a2b4028",
-        "properties" => array(
-            array(
-                "name" => "preferredLanguage",
-                "value" => "en"
-            )
-        )
-    );
-    file_put_contents("refreshout", json_encode($responsearr));
-    print(json_encode($responsearr));
+EOF;
+$inputarr = json_decode($injson, true);
+$db = dbconnect();
+$stmt = $db->prepare("SELECT `id`, `uuid`, `selectedprofile` FROM `user` WHERE `accesstoken` = ? AND `clienttoken` = ?");
+$stmt->bind_param("ss", $inputarr["accessToken"], $inputarr["clientToken"]);
+$stmt->execute();
+$stmt->bind_result($userid, $accuuid, $profileid);
+if(!$stmt->fetch()) {
+    http_response_code(403);
+    print(json_encode(array("error"=>"ForbiddenOperationException","errorMessage"=>"Invalid token.")));
+    die();
+}
+$stmt->close();
+$clienttoken = $inputarr["clientToken"];
+$accesstoken = gen_uuid();
+$stmt = $db->prepare("UPDATE `user` SET `accesstoken` = ? WHERE `id` = ?");
+$stmt->bind_param('si', $accesstoken, $userid);
+$stmt->execute();
+$stmt->close();
+$responsearr = array(
+    "accessToken" => $accesstoken,
+    "clientToken" => $clienttoken
+);
+$selectedprofile = null;
+get_availableprofiles($db, $userid, $profileid, $selectedprofile);
+if($inputarr["requestUser"]) {
+    $userobj = array("id"=>$accuuid, "properties"=>get_userprops($db, $userid));
+}
+$responsearr = array(
+    "accessToken" => $accesstoken,
+    "clientToken" => $clienttoken
+);
+if($selectedprofile) $responsearr["selectedProfile"] = $selectedprofile;
+if($inputarr["requestUser"]) {
+    $responsearr["user"] = $userobj;
+}
+print(json_encode($responsearr));
 ?>

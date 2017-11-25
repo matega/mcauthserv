@@ -36,8 +36,40 @@ function gen_uuid() {
  return $uuid;
 }
 
+function is_uuid($s) {
+    return preg_match("/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/",$s);
+}
+
 function dbconnect() {
-    return mysqli_connect("unix:/var/run/mysqld/mysqld.sock","minecraft","minepass");
+    return mysqli_connect("localhost","minecraft","minepass","minecraft",0,"/var/run/mysqld/mysqld.sock");
+}
+
+function get_userprops($db, $userid) {
+    $userprops=array();
+    $stmt = $db->prepare("SELECT `name`, `value` FROM `userprop` WHERE `userid` = ?");
+    $stmt->bind_param("i", $userid);
+    $stmt->execute();
+    $stmt->bind_result($pname, $pvalue);
+    while($stmt->fetch()) {
+        $userprops[] = array($pname=>$pvalue);
+    }
+    $stmt->close();
+    return($userprops);
+}
+
+function get_availableprofiles($db, $userid, $profileid, &$selectedprofile) {
+    $availableProfiles = array();
+    $stmt = $db->prepare("SELECT `id`, `uuid`, `name` FROM `profile` WHERE `userid` = ?");
+    $stmt->bind_param("i", $userid);
+    $stmt->execute();
+    $stmt->bind_result($prid, $profileuuid, $profilename);
+    while($stmt->fetch()) {
+        $availableProfiles[] = array("id"=>$profileuuid, "name"=>$profilename);
+        if($prid = $profileid) $selectedprofile = array("id"=>$profileuuid, "name"=>$profilename);
+    }
+    $stmt->close();
+    if(!isset($selectedprofile) && count($availableProfiles)) $selectedprofile = $availableProfiles[0];
+    return($availableProfiles);
 }
 
 ?>
