@@ -12,12 +12,19 @@ $inputarr = json_decode($injson, true);
 $db = dbconnect();
 $clienttoken = array_key_exists("clientToken", $inputarr)?$inputarr["clientToken"]:"";
 $skipct = !array_key_exists("clientToken", $inputarr);
-$stmt = $db->prepare("SELECT 1 FROM `user` WHERE `accesstoken` = ? AND ((`clienttoken` = ?) OR ?) AND `accesstoken` IS NOT NULL");
+$stmt = $db->prepare("SELECT `id` FROM `user` WHERE `accesstoken` = ? AND ((`clienttoken` = ?) OR ?)");
 $stmt->bind_param("ssi", $inputarr["accessToken"], $clienttoken, $skipct);
 $stmt->execute();
-$stmt->bind_result($a);
+$stmt->bind_result($userid);
 $stmt->fetch();
-http_response_code($a?204:403);
+http_response_code($userid?204:403);
 if(!$a) {
     print(json_encode(array("error"=>"ForbiddenOperationException","errorMessage"=>"Invalid token.")));
+    die();
 }
+$stmt = $db->prepare("UPDATE `user` SET `accesstoken` = NULL, `clienttoken` = NULL WHERE `id` = ?");
+$stmt->bind_param('i', $userid);
+$stmt->execute();
+$stmt->close();
+http_response_code(204);
+?>

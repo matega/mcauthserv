@@ -15,7 +15,7 @@ if($injson == "") $injson = <<<EOF
 EOF;
 $inputarr = json_decode($injson, true);
 $db = dbconnect();
-$stmt = $db->prepare("SELECT `id`, `uuid`, `selectedprofile` FROM `user` WHERE `accesstoken` = ? AND `clienttoken` = ?");
+$stmt = $db->prepare("SELECT `id`, `uuid`, `selectedprofile` FROM `user` WHERE `accesstoken` = ? AND `clienttoken` = ? AND `accesstoken` IS NOT NULL");
 $stmt->bind_param("ss", $inputarr["accessToken"], $inputarr["clientToken"]);
 $stmt->execute();
 $stmt->bind_result($userid, $accuuid, $profileid);
