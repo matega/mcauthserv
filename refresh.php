@@ -1,7 +1,7 @@
 <?php
 include_once("functions.php");
 $injson = file_get_contents('php://input');
-file_put_contents("authin", $injson);
+file_put_contents("refreshin", $injson);
 if($injson == "") $injson = <<<EOF
 {
     "accessToken": "7c29059d-8238-42aa-de6b-92750c2e5a37",
