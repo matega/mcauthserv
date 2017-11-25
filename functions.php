@@ -51,7 +51,7 @@ function get_userprops($db, $userid) {
     $stmt->execute();
     $stmt->bind_result($pname, $pvalue);
     while($stmt->fetch()) {
-        $userprops[] = array($pname=>$pvalue);
+        $userprops[] = array("name"=>$pname, "value"=>$pvalue);
     }
     $stmt->close();
     return($userprops);
