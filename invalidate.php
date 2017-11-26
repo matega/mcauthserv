@@ -4,7 +4,7 @@ $injson = file_get_contents('php://input');
 file_put_contents("refreshin", $injson);
 if($injson == "") $injson = <<<EOF
 {
-    "accessToken": "081a771e-134e-4b6b-d73f-ec4eb7ce3bcd",
+    "accessToken": "081a771e134e4b6bd73fec4eb7ce3bcd",
     "clientToken": "978a6b5d-6e70-41af-99a2-1b74d9532375"
 }
 EOF;
@@ -13,7 +13,8 @@ $db = dbconnect();
 $clienttoken = array_key_exists("clientToken", $inputarr)?$inputarr["clientToken"]:"";
 $skipct = !array_key_exists("clientToken", $inputarr);
 $stmt = $db->prepare("SELECT `id` FROM `user` WHERE `accesstoken` = ? AND ((`clienttoken` = ?) OR ?)");
-$stmt->bind_param("ssi", $inputarr["accessToken"], $clienttoken, $skipct);
+$accesstoken = htu($inputarr["accessToken"]);
+$stmt->bind_param("ssi", $accesstoken, $clienttoken, $skipct);
 $stmt->execute();
 $stmt->bind_result($userid);
 $stmt->fetch();

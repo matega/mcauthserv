@@ -39,10 +39,10 @@ if($inputarr["agent"]["name"] == "Minecraft") {
     $availableProfiles = get_availableprofiles($db, $userid, $profileid, $selectedprofile);
 }
 if($inputarr["requestUser"]) {
-    $userobj = array("id"=>$accuuid, "properties"=>get_userprops($db, $userid));
+    $userobj = array("id"=>htu($accuuid), "properties"=>get_userprops($db, $userid));
 }
 $responsearr = array(
-    "accessToken" => $accesstoken,
+    "accessToken" => uth($accesstoken),
     "clientToken" => $clienttoken
 );
 if($inputarr["agent"]["name"] == "Minecraft") {

@@ -16,7 +16,8 @@ EOF;
 $inputarr = json_decode($injson, true);
 $db = dbconnect();
 $stmt = $db->prepare("SELECT `id`, `uuid`, `selectedprofile` FROM `user` WHERE `accesstoken` = ? AND `clienttoken` = ? AND `accesstoken` IS NOT NULL");
-$stmt->bind_param("ss", $inputarr["accessToken"], $inputarr["clientToken"]);
+$accesstoken = htu($inputarr["accessToken"]);
+$stmt->bind_param("ss", $accesstoken, $inputarr["clientToken"]);
 $stmt->execute();
 $stmt->bind_result($userid, $accuuid, $profileid);
 if(!$stmt->fetch()) {
@@ -26,7 +27,7 @@ if(!$stmt->fetch()) {
 }
 $stmt->close();
 $clienttoken = $inputarr["clientToken"];
-$accesstoken = gen_uuid();
+$accesstoken = uth(gen_uuid());
 $stmt = $db->prepare("UPDATE `user` SET `accesstoken` = ? WHERE `id` = ?");
 $stmt->bind_param('si', $accesstoken, $userid);
 $stmt->execute();
@@ -38,7 +39,7 @@ $responsearr = array(
 $selectedprofile = null;
 get_availableprofiles($db, $userid, $profileid, $selectedprofile);
 if($inputarr["requestUser"]) {
-    $userobj = array("id"=>$accuuid, "properties"=>get_userprops($db, $userid));
+    $userobj = array("id"=>uth($accuuid), "properties"=>get_userprops($db, $userid));
 }
 $responsearr = array(
     "accessToken" => $accesstoken,

@@ -37,7 +37,7 @@ function gen_uuid() {
 }
 
 function is_uuid($s) {
-    return preg_match("/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/",$s);
+    return preg_match("/^[0-9a-fA-F]{8}-?([0-9a-fA-F]{4}-?){3}[0-9a-fA-F]{12}$/",$s);
 }
 
 function dbconnect() {
@@ -64,12 +64,20 @@ function get_availableprofiles($db, $userid, $profileid, &$selectedprofile) {
     $stmt->execute();
     $stmt->bind_result($prid, $profileuuid, $profilename);
     while($stmt->fetch()) {
-        $availableProfiles[] = array("id"=>$profileuuid, "name"=>$profilename);
-        if($prid = $profileid) $selectedprofile = array("id"=>$profileuuid, "name"=>$profilename);
+        $availableProfiles[] = array("id"=>uth($profileuuid), "name"=>$profilename);
+        if($prid = $profileid) $selectedprofile = array("id"=>uth($profileuuid), "name"=>$profilename);
     }
     $stmt->close();
     if(!isset($selectedprofile) && count($availableProfiles)) $selectedprofile = $availableProfiles[0];
     return($availableProfiles);
+}
+
+function htu($s) {
+    return preg_replace("/^([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{12})$/","\\1-\\2-\\3-\\4-\\5", uth($s));
+}
+
+function uth($s) {
+    return preg_replace("/[^0-9a-fA-F]/","",$s);
 }
 
 ?>
