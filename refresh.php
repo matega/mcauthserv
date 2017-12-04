@@ -27,13 +27,13 @@ if(!$stmt->fetch()) {
 }
 $stmt->close();
 $clienttoken = $inputarr["clientToken"];
-$accesstoken = uth(gen_uuid());
+$accesstoken = gen_uuid();
 $stmt = $db->prepare("UPDATE `user` SET `accesstoken` = ? WHERE `id` = ?");
 $stmt->bind_param('si', $accesstoken, $userid);
 $stmt->execute();
 $stmt->close();
 $responsearr = array(
-    "accessToken" => $accesstoken,
+    "accessToken" => htu($accesstoken),
     "clientToken" => $clienttoken
 );
 $selectedprofile = null;
