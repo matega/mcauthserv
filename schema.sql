@@ -20,5 +20,6 @@ CREATE TABLE `profile` (
     `uuid` CHAR(36),
     `name` VARCHAR(200),
     `skin` BLOB,
-    `cape` BLOB
+    `cape` BLOB,
+    `slim` BOOLEAN
     );
