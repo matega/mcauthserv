@@ -7,7 +7,7 @@ $stmt->bind_param("ss",$_GET["serverId"], $_GET["username"]);
 $stmt->execute();
 $stmt->bind_result($profileuuid, $profilename, $skin, $cape, $slim);
 if($stmt->fetch()) {
-    print(json_encode(mkprofilearr($prifileuuid, $profilename, $skin, $cape, $slim, true)));
+    print(json_encode(mkprofilearr($profileuuid, $profilename, $skin, $cape, $slim, true)));
 } else {
     http_response_code(403);
 }
