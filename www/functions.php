@@ -105,20 +105,7 @@ function mkprofilearr($profileuuid, $profilename, $skin, $cape, $slim, $sigreq) 
         "value" => $texturesb,
     );
     if($sigreq) {
-        $succ = openssl_sign($texturesj, $sig, $glaceonprivkey, OPENSSL_ALGO_SHA1);
-        if($succ) {
-            $properties["signature"] = base64_encode($sig);
-        }
-    }
-    $responsearr = array(
-        "id" => uth($profileuuid),
-        "name" => $profilename,
-        "properties" => array($properties)
-    );
-    return $responsearr;
-}
-
-$glaceonprivkey = <<<EOF
+    $glaceonprivkey = <<<EOF
 -----BEGIN RSA PRIVATE KEY-----
 MIIJKgIBAAKCAgEA8NFzqBxrP3ItlPjvrQu0k69rwxyR83X2ZbRAuFyNjlSRhmG6
 Q9AiYpxOIc3oGGnDghexvL6SxhVBLKLjs8XHkX0BFvu4jk0TXpxqfM8/Ab0TMne7
@@ -172,5 +159,19 @@ T7Ko3jHeh9X378herF+sdSL/IWTsc46ayS6XJQsy8Owkm/ymZ10KU+SHS9eotA==
 -----END RSA PRIVATE KEY-----
 EOF
 ;
+        $succ = openssl_sign($texturesj, $sig, $glaceonprivkey, OPENSSL_ALGO_SHA1);
+        if($succ) {
+            $properties["signature"] = base64_encode($sig);
+        }
+    }
+    $responsearr = array(
+        "id" => uth($profileuuid),
+        "name" => $profilename,
+        "properties" => array($properties)
+    );
+    return $responsearr;
+}
+
+
 
 ?>
