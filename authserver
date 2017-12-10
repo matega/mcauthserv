@@ -1,14 +1,22 @@
 server {
 	listen 443 ssl;
-	ssl_certificate_key ###;
-	ssl_certificate ###;
+	ssl_certificate_key /home/matega/authservssl/any.mojang.com.key.pem;
+	ssl_certificate /home/matega/authservssl/any.mojang.com.crt.pem;
 	server_name *.mojang.com;
-	root ###;
+	root /home/matega/authserver/www;
 	index index.php index.html;
 	location ~ /\. {
 		deny all;
 		access_log off;
 		log_not_found off;
+	}
+	location ~ /session/minecraft/profile/(?<uuid>[0-9a-zA-Z-]*) {
+        fastcgi_param SCRIPT_FILENAME "$document_root/session/minecraft/profile.php";
+        fastcgi_param PATH_TRANSLATED "$document_root/session/minecraft/profile.php";
+        fastcgi_param QUERY_STRING $args;
+        fastcgi_param PATH_INFO "$uuid";
+        include fastcgi_params;
+        fastcgi_pass unix:/var/run/php/php7.1-fpm.sock;
 	}
 	location / {
 		try_files $uri $uri/ @php;
